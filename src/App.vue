@@ -1,32 +1,41 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <router-view />
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import { mapGetters, mapActions } from 'vuex';
+import { getWsClient } from '@/api/websocket';
 
-#nav {
-  padding: 30px;
+const ws = getWsClient();
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+export default {
+  computed: {
+    ...mapGetters({
+      peerId: 'peer/id',
+    }),
+  },
 
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+  methods: {
+    ...mapActions({
+      setPeerId: 'peer/setId',
+    }),
+  },
+
+  async mounted() {
+    ws.onDisconnect((willReconnect) => {
+      if (!willReconnect) {
+        window.location.reload();
+      }
+
+      this.setPeerId(null);
+    });
+
+    ws.subscribe('/ws/peer/id', (peerId) => this.setPeerId(peerId));
+  },
+};
+</script>
+
+<style lang="sass">
+@import ~bulma
+@import ~buefy/src/scss/buefy.scss
 </style>

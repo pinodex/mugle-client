@@ -1,4 +1,4 @@
-# client
+# Mugle Client
 
 ## Project setup
 ```

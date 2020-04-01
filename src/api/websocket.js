@@ -4,6 +4,7 @@ import { ws } from '@/config';
 let client = null;
 
 export const TYPE_PRESENCE = 'presence';
+export const TYPE_READY = 'ready';
 
 /**
  * Get Nes Client instance
@@ -33,4 +34,11 @@ export async function sendMessage(type, data = null) {
  */
 export async function sendPresence() {
   return sendMessage(TYPE_PRESENCE);
+}
+
+/**
+ * Send ready
+ */
+export async function sendReady() {
+  return sendMessage(TYPE_READY);
 }

@@ -39,6 +39,7 @@
 import { mapGetters, mapActions } from 'vuex';
 import { getWsClient, sendPresence, sendReady } from '@/api/websocket';
 import { createPeerInstance } from '@/api/peer';
+import iceServerService from '@/api/services/ice-server';
 import VideoFeed from '@/components/VideoFeed.vue';
 
 const ws = getWsClient();
@@ -63,12 +64,6 @@ export default {
     }),
   },
 
-  watch: {
-    peerId(peerId) {
-      console.log(`Reconnected. New peer ID: ${peerId}`);
-    },
-  },
-
   async mounted() {
     if (!this.peerId) {
       this.$router.push({
@@ -78,11 +73,13 @@ export default {
       return;
     }
 
+    const iceServers = await this.getIceServers();
+
     await this.loadSelfStream();
 
     await sendReady();
 
-    peer = createPeerInstance(this.peerId);
+    peer = createPeerInstance(this.peerId, iceServers);
 
     peer.on('open', this.onPeerOpen);
     peer.on('call', this.onPeerCall);
@@ -114,6 +111,12 @@ export default {
       this.selfStream = await navigator.mediaDevices.getUserMedia(constraints);
     },
 
+    async getIceServers() {
+      const { data } = await iceServerService.all();
+
+      return data;
+    },
+
     onPeerOpen() {
       ws.subscribe('/ws/peer/match', this.onPeerMatch);
 
@@ -135,8 +138,6 @@ export default {
     },
 
     onPartnerStream(stream) {
-      console.log('onPartnerStream', stream);
-
       this.partnerStream = stream;
     },
   },

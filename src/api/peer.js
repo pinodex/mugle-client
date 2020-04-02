@@ -1,9 +1,8 @@
 import Peer from 'peerjs';
-import iceServers from './ice.json';
 
 let instance = null;
 
-export function createPeerInstance(id) {
+export function createPeerInstance(id, iceServers) {
   instance = new Peer(id, {
     debug: 3,
     iceServers,

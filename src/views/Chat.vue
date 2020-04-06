@@ -11,6 +11,7 @@
             <div class="has-ratio">
               <VideoFeed
                 :stream="selfStream"
+                small
               />
             </div>
           </div>

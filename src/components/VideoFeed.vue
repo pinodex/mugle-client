@@ -17,20 +17,41 @@
         muted
       />
     </transition>
+
+    <div
+      class="loading-container"
+      v-if="isLoading"
+    >
+      <Loading
+        :style="loadingStyle"
+      />
+    </div>
   </figure>
 </template>
 
 <script>
+import Loading from '@/components/Loading.vue';
+
 export default {
+  components: {
+    Loading,
+  },
+
   props: {
     stream: {
       type: MediaStream,
       default: null,
     },
+
+    small: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data: () => ({
     showStream: false,
+    isLoading: true,
   }),
 
   watch: {
@@ -39,7 +60,16 @@ export default {
 
       setTimeout(() => {
         this.showStream = true;
+        this.isLoading = false;
       }, 500);
+    },
+  },
+
+  computed: {
+    loadingStyle() {
+      return this.small && {
+        transform: 'scale(.5)',
+      };
     },
   },
 };
@@ -59,12 +89,20 @@ export default {
   background: url('../assets/img/blurred-bg.webp')
   background-size: cover
 
-.video
+.video,
+.loading-container
   position: absolute
   top: 0
   left: 0
   right: 0
   bottom: 0
+
+.loading-container
+  display: flex
+  align-items: center
+  justify-content: center
+
+.video
   width: 100%
   height: 100%
   object-fit: contain

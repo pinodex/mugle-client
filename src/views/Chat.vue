@@ -1,40 +1,36 @@
 <template>
-  <div v-if="peerId">
-    <div class="columns is-gapless main-container">
-      <div class="column is-8 video-container">
-        <VideoFeed
-          :stream="partnerStream"
-        />
+  <div
+    class="columns main-container"
+    v-if="peerId"
+  >
+    <div class="column is-8 video-container">
+      <VideoFeed
+        :stream="partnerStream"
+      />
 
-        <div class="floating-video">
+      <transition name="fade">
+        <div
+          class="floating-video"
+          v-show="showSelfStream"
+        >
           <div class="image is-16by9">
             <div class="has-ratio">
               <VideoFeed
                 :stream="selfStream"
+                @ready="onSelfStreamReady"
                 small
               />
             </div>
           </div>
         </div>
-      </div>
+      </transition>
+    </div>
+
+    <div class="column chatbox-container">
+      <Chatbox class="chatbox" />
     </div>
   </div>
 </template>
-
-<style lang="sass" scoped>
-.main-container
-  height: 100vh
-
-.video-container
-  position: relative
-  height: 100vh
-
-.floating-video
-  position: absolute
-  right: 2rem
-  bottom: 2rem
-  width: 200px
-</style>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
@@ -42,6 +38,7 @@ import { getWsClient, sendPresence, sendReady } from '@/api/websocket';
 import { createPeerInstance } from '@/api/peer';
 import iceServerService from '@/api/services/ice-server';
 import VideoFeed from '@/components/VideoFeed.vue';
+import Chatbox from '@/components/Chat/Chatbox.vue';
 
 const ws = getWsClient();
 
@@ -51,9 +48,11 @@ let peer = null;
 export default {
   components: {
     VideoFeed,
+    Chatbox,
   },
 
   data: () => ({
+    showSelfStream: false,
     selfStream: null,
     partnerStream: null,
   }),
@@ -118,6 +117,10 @@ export default {
       return data;
     },
 
+    onSelfStreamReady() {
+      this.showSelfStream = true;
+    },
+
     onPeerOpen() {
       ws.subscribe('/ws/peer/match', this.onPeerMatch);
 
@@ -144,3 +147,40 @@ export default {
   },
 };
 </script>
+
+<style lang="sass" scoped>
+@import @/assets/sass/commons.sass
+
+.main-container
+  height: 100vh
+  margin: 0
+
+  & > .column
+    max-height: 100%
+    padding: 0
+
+.video-container
+  position: relative
+  height: 100%
+
+.floating-video
+  position: absolute
+  right: 2rem
+  bottom: 2rem
+  width: 200px
+
+  +mobile
+    top: 2rem
+    bottom: unset
+
+.chatbox-container
+  +mobile
+    position: fixed
+    top: 50%
+    left: 0
+    right: 0
+    bottom: 0
+
+.chatbox
+  height: 100%
+</style>

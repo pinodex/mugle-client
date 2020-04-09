@@ -39,6 +39,9 @@ export default {
 @import ~bulma
 @import ~buefy/src/scss/buefy.scss
 
+html, body
+  overflow-y: auto
+
 .fade-enter-active,
 .fade-leave-active
   transition: opacity .5s

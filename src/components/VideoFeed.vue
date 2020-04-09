@@ -58,9 +58,12 @@ export default {
     stream(stream) {
       this.$refs.video.srcObject = stream;
 
+      this.isLoading = false;
+
       setTimeout(() => {
         this.showStream = true;
-        this.isLoading = false;
+
+        this.$emit('ready');
       }, 500);
     },
   },

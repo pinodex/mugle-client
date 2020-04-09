@@ -31,8 +31,9 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters } from 'vuex';
 import Simplebar from 'simplebar-vue';
+import Message from '@/models/Message';
 import Announcement from '@/components/Chat/Message/Announcement.vue';
 import Bubble from '@/components/Chat/Message/Bubble.vue';
 import Composer from '@/components/Chat/Composer.vue';
@@ -45,12 +46,16 @@ export default {
     Composer,
   },
 
-  data: () => ({
-    disabled: false,
-  }),
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
+  },
 
   computed: {
     ...mapGetters({
+      peerId: 'peer/id',
       messages: 'chat/messages',
     }),
   },
@@ -62,13 +67,10 @@ export default {
   },
 
   methods: {
-    ...mapActions({
-      send: 'chat/send',
-      announce: 'chat/announce',
-    }),
+    onMessage(content) {
+      const message = new Message(this.peerId, content);
 
-    onMessage(message) {
-      this.send(message);
+      this.$emit('message', message);
     },
 
     scrollToBottom() {

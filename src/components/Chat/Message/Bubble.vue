@@ -44,11 +44,13 @@ export default {
 .message
   max-width: 75%
 
+  .message-body
+    padding: .5rem 1rem
+
   &.has-background
     background: linear-gradient(145deg, #26d0ce, #1a2980)
 
     .message-body
-      padding: .5rem 1rem
       color: #fff
 
   .message-body

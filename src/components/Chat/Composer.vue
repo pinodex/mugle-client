@@ -8,7 +8,7 @@
           class="input is-rounded message-input"
           type="text"
           placeholder="Type a message"
-          v-model="message"
+          v-model="content"
           :disabled="disabled"
         />
       </p>
@@ -37,15 +37,15 @@ export default {
   },
 
   data: () => ({
-    message: null,
+    content: null,
   }),
 
   methods: {
     submit() {
-      if (this.message) {
-        this.$emit('message', this.message);
+      if (this.content) {
+        this.$emit('message', this.content);
 
-        this.message = null;
+        this.content = null;
       }
     },
   },

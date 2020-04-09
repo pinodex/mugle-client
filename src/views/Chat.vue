@@ -17,7 +17,7 @@
             <div class="has-ratio">
               <VideoFeed
                 :stream="selfStream"
-                @ready="onSelfStreamReady"
+                @ready="showSelfStream = true"
                 small
               />
             </div>
@@ -27,15 +27,21 @@
     </div>
 
     <div class="column chatbox-container">
-      <Chatbox class="chatbox" />
+      <Chatbox
+        class="chatbox"
+        :disabled="!isDataReady"
+        @message="onSendMessage"
+      />
     </div>
   </div>
 </template>
 
 <script>
+import { serialize, deserialize } from 'serializr';
 import { mapGetters, mapActions } from 'vuex';
 import { getWsClient, sendPresence, sendReady } from '@/api/websocket';
 import { createPeerInstance } from '@/api/peer';
+import Message from '@/models/Message';
 import iceServerService from '@/api/services/ice-server';
 import VideoFeed from '@/components/VideoFeed.vue';
 import Chatbox from '@/components/Chat/Chatbox.vue';
@@ -53,8 +59,12 @@ export default {
 
   data: () => ({
     showSelfStream: false,
+    isDataReady: false,
+
     selfStream: null,
     partnerStream: null,
+
+    dataConnection: null,
   }),
 
   computed: {
@@ -62,6 +72,20 @@ export default {
       peerId: 'peer/id',
       partnerId: 'peer/partnerId',
     }),
+  },
+
+  watch: {
+    partnerId(partnerId) {
+      if (partnerId !== null) {
+        peer.call(partnerId, this.selfStream);
+
+        const conn = peer.connect(partnerId);
+
+        conn.on('open', () => {
+          conn.on('data', this.onPeerData);
+        });
+      }
+    },
   },
 
   async mounted() {
@@ -77,12 +101,11 @@ export default {
 
     await this.loadSelfStream();
 
-    await sendReady();
-
     peer = createPeerInstance(this.peerId, iceServers);
 
     peer.on('open', this.onPeerOpen);
     peer.on('call', this.onPeerCall);
+    peer.on('connection', this.onPeerConnection);
   },
 
   beforeDestroy() {
@@ -100,6 +123,7 @@ export default {
   methods: {
     ...mapActions({
       setPartnerId: 'peer/setPartnerId',
+      addChatMessage: 'chat/addMessage',
     }),
 
     async loadSelfStream() {
@@ -117,32 +141,46 @@ export default {
       return data;
     },
 
-    onSelfStreamReady() {
-      this.showSelfStream = true;
-    },
-
     onPeerOpen() {
       ws.subscribe('/ws/peer/match', this.onPeerMatch);
 
       presenceInterval = setInterval(sendPresence, 3000);
+
+      sendReady();
     },
 
-    onPeerCall(call) {
-      call.answer(this.selfStream);
+    onPeerCall(mediaConnection) {
+      mediaConnection.on('stream', (stream) => {
+        this.partnerStream = stream;
+      });
 
-      call.on('stream', this.onPartnerStream);
+      mediaConnection.answer();
+    },
+
+    onPeerConnection(dataConnection) {
+      dataConnection.on('open', () => {
+        this.isDataReady = true;
+
+        this.dataConnection = dataConnection;
+      });
+    },
+
+    onPeerData(data) {
+      const message = deserialize(Message, data);
+
+      this.addChatMessage(message);
     },
 
     onPeerMatch(partnerId) {
       this.setPartnerId(partnerId);
-
-      const partner = peer.call(partnerId, this.selfStream);
-
-      partner.on('stream', this.onPartnerStream);
     },
 
-    onPartnerStream(stream) {
-      this.partnerStream = stream;
+    onSendMessage(message) {
+      this.addChatMessage(message);
+
+      if (this.dataConnection !== null) {
+        this.dataConnection.send(serialize(message));
+      }
     },
   },
 };

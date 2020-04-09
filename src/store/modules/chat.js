@@ -1,3 +1,5 @@
+import Message from '@/models/Message';
+
 const ADD_MESSAGE = 'ADD_MESSAGE';
 
 export default {
@@ -8,18 +10,26 @@ export default {
   },
 
   getters: {
-    messages(state) {
-      return state.messages;
+    messages({ messages }, getters, rootState, rootGetters) {
+      const peerId = rootGetters['peer/id'];
+
+      return messages.map((message) => {
+        if (message instanceof Message) {
+          return {
+            type: 'bubble',
+            self: message.sender === peerId,
+            content: message.content,
+          };
+        }
+
+        return {};
+      });
     },
   },
 
   actions: {
-    send({ commit }, content) {
-      commit(ADD_MESSAGE, {
-        type: 'bubble',
-        self: true,
-        content,
-      });
+    addMessage({ commit }, message) {
+      commit(ADD_MESSAGE, message);
     },
 
     announce({ commit }, content) {

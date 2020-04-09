@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start": "node server.js",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
@@ -15,6 +16,7 @@
     "core-js": "^3.6.4",
     "peerjs": "^1.2.0",
     "serializr": "^2.0.3",
+    "serve-handler": "^6.1.2",
     "simplebar-vue": "^1.4.0",
     "vue": "^2.6.11",
     "vue-router": "^3.1.5",

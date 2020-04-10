@@ -47,6 +47,7 @@ import {
 } from '@/api/websocket';
 import { createPeerInstance } from '@/api/peer';
 import Message from '@/models/Message';
+import userMediaConstraints from '@/utils/user-media-constraints';
 import iceServerService from '@/api/services/ice-server';
 import VideoFeed from '@/components/VideoFeed.vue';
 import Chatbox from '@/components/Chat/Chatbox.vue';
@@ -95,9 +96,7 @@ export default {
 
   async mounted() {
     if (!this.peerId) {
-      this.$router.push({
-        name: 'index',
-      });
+      this.redirectToHome();
 
       return;
     }
@@ -106,7 +105,13 @@ export default {
 
     sendPeerDisconnect();
 
-    await this.loadSelfStream();
+    try {
+      await this.loadSelfStream();
+    } catch {
+      this.redirectToHome();
+
+      return;
+    }
 
     const iceServers = await this.getIceServers();
 
@@ -127,6 +132,14 @@ export default {
 
       peer = null;
     }
+
+    if (this.selfStream) {
+      this.selfStream.getTracks().forEach((track) => track.stop());
+    }
+
+    if (this.partnerStream) {
+      this.partnerStream.getTracks().forEach((track) => track.stop());
+    }
   },
 
   methods: {
@@ -136,12 +149,7 @@ export default {
     }),
 
     async loadSelfStream() {
-      const constraints = {
-        audio: true,
-        video: true,
-      };
-
-      this.selfStream = await navigator.mediaDevices.getUserMedia(constraints);
+      this.selfStream = await navigator.mediaDevices.getUserMedia(userMediaConstraints);
     },
 
     async getIceServers() {
@@ -190,6 +198,12 @@ export default {
       if (this.dataConnection !== null) {
         this.dataConnection.send(serialize(message));
       }
+    },
+
+    redirectToHome() {
+      this.$router.push({
+        name: 'index',
+      });
     },
   },
 };

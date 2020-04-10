@@ -39,7 +39,12 @@
 <script>
 import { serialize, deserialize } from 'serializr';
 import { mapGetters, mapActions } from 'vuex';
-import { getWsClient, sendPresence, sendReady } from '@/api/websocket';
+import {
+  getWsClient,
+  sendPresence,
+  sendReady,
+  sendPeerDisconnect,
+} from '@/api/websocket';
 import { createPeerInstance } from '@/api/peer';
 import Message from '@/models/Message';
 import iceServerService from '@/api/services/ice-server';
@@ -97,9 +102,13 @@ export default {
       return;
     }
 
-    const iceServers = await this.getIceServers();
+    this.setPartnerId(null);
+
+    sendPeerDisconnect();
 
     await this.loadSelfStream();
+
+    const iceServers = await this.getIceServers();
 
     peer = createPeerInstance(this.peerId, iceServers);
 

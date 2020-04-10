@@ -3,18 +3,12 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapActions } from 'vuex';
 import { getWsClient } from '@/api/websocket';
 
 const ws = getWsClient();
 
 export default {
-  computed: {
-    ...mapGetters({
-      peerId: 'peer/id',
-    }),
-  },
-
   methods: {
     ...mapActions({
       setPeerId: 'peer/setId',

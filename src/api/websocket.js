@@ -5,6 +5,7 @@ let client = null;
 
 export const TYPE_PRESENCE = 'presence';
 export const TYPE_READY = 'ready';
+export const TYPE_PEER_DISCONNECT = 'peerDisconnect';
 
 /**
  * Get Nes Client instance
@@ -41,4 +42,11 @@ export async function sendPresence() {
  */
 export async function sendReady() {
   return sendMessage(TYPE_READY);
+}
+
+/**
+ * Send peer disconnect
+ */
+export async function sendPeerDisconnect() {
+  return sendMessage(TYPE_PEER_DISCONNECT);
 }

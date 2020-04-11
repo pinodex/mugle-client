@@ -1,0 +1,19 @@
+stages:
+  - test
+
+image: node:12.16-alpine3.11
+
+cache:
+  key: dependencies
+  paths:
+    - node_modules/
+
+eslint:
+  stage: test
+  before_script:
+    - npm install
+  script:
+    - npm run lint
+  only:
+    - master
+    - merge_requests

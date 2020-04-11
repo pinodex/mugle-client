@@ -1,24 +1,16 @@
 # Mugle Client
 
-## Project setup
-```
-npm install
-```
+### Requirements
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+* Node 12.x
 
-### Compiles and minifies for production
-```
-npm run build
-```
+### Development Setup
 
-### Lints and fixes files
-```
-npm run lint
-```
+1. Run `npm install`
+2. Copy the file `.env.example` to `.env`
+3. Fill out the URLs and PeerJS server config
+6. Start development server with `npm run serve`
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+#### Linting
+
+Run eslint with `npm run lint`

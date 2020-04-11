@@ -12,6 +12,7 @@ export default {
   methods: {
     ...mapActions({
       setPeerId: 'peer/setId',
+      addChatAnnouncement: 'chat/addChatAnnouncement',
     }),
   },
 
@@ -19,9 +20,13 @@ export default {
     ws.onDisconnect((willReconnect) => {
       if (!willReconnect) {
         window.location.reload();
+
+        return;
       }
 
       this.setPeerId(null);
+
+      this.addChatAnnouncement('Disconnected');
     });
 
     ws.subscribe('/ws/peer/id', (peerId) => this.setPeerId(peerId));

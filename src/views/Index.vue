@@ -41,10 +41,6 @@ export default {
     showUserMediaPermissionPrompt: false,
   }),
 
-  async mounted() {
-    await ws.disconnect();
-  },
-
   methods: {
     async start() {
       this.isLoading = true;

@@ -1,6 +1,13 @@
+import Announcement from '@/models/Announcement';
 import Message from '@/models/Message';
 
 const ADD_MESSAGE = 'ADD_MESSAGE';
+const CLEAR_MESSAGES = 'CLEAR_MESSAGES';
+
+const messageTypeMap = {
+  [Announcement]: 'announcement',
+  [Message]: 'bubble',
+};
 
 export default {
   namespaced: true,
@@ -14,15 +21,17 @@ export default {
       const peerId = rootGetters['peer/id'];
 
       return messages.map((message) => {
-        if (message instanceof Message) {
-          return {
-            type: 'bubble',
-            self: message.sender === peerId,
-            content: message.content,
-          };
+        const type = messageTypeMap[message.constructor];
+
+        if (!type) {
+          return {};
         }
 
-        return {};
+        return {
+          type,
+          self: message.sender === peerId,
+          content: message.content,
+        };
       });
     },
   },
@@ -32,17 +41,24 @@ export default {
       commit(ADD_MESSAGE, message);
     },
 
-    announce({ commit }, content) {
-      commit(ADD_MESSAGE, {
-        type: 'announcement',
-        content,
-      });
+    addChatAnnouncement({ commit }, content) {
+      commit(ADD_MESSAGE, new Announcement(content));
+    },
+
+    clearMessages({ commit }) {
+      commit(CLEAR_MESSAGES);
     },
   },
 
   mutations: {
     [ADD_MESSAGE]: (state, message) => {
       state.messages.push(message);
+    },
+
+    [CLEAR_MESSAGES]: (state) => {
+      while (state.messages.length > 0) {
+        state.messages.pop();
+      }
     },
   },
 };

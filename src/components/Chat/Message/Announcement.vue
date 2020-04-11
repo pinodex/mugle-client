@@ -11,7 +11,12 @@ export default {
 </script>
 
 <style lang="sass" scoped>
+@import @/assets/sass/commons.sass
+
 p
   margin-bottom: 1rem
   text-align: center
+
+  +mobile
+    color: $white
 </style>

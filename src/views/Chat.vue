@@ -65,7 +65,6 @@ export default {
 
   data: () => ({
     showSelfStream: false,
-    isDataReady: false,
 
     selfStream: null,
     partnerStream: null,
@@ -78,6 +77,10 @@ export default {
       peerId: 'peer/id',
       partnerId: 'peer/partnerId',
     }),
+
+    isDataReady() {
+      return this.dataConnection !== null;
+    },
   },
 
   watch: {
@@ -120,17 +123,27 @@ export default {
     peer.on('open', this.onPeerOpen);
     peer.on('call', this.onPeerCall);
     peer.on('connection', this.onPeerConnection);
+    peer.on('disconnected', this.onPeerDisconnected);
   },
 
   beforeDestroy() {
+    this.clearMessages();
+
+    this.setPeerId(null);
+    this.setPartnerId(null);
+
     clearInterval(presenceInterval);
 
-    ws.unsubscribe('/ws/peer/match', this.onPeerMatch);
+    ws.disconnect();
 
     if (peer !== null) {
       peer.destroy();
 
       peer = null;
+    }
+
+    if (this.dataConnection !== null) {
+      this.dataConnection = null;
     }
 
     if (this.selfStream) {
@@ -144,8 +157,11 @@ export default {
 
   methods: {
     ...mapActions({
+      setPeerId: 'peer/setId',
       setPartnerId: 'peer/setPartnerId',
       addChatMessage: 'chat/addMessage',
+      addChatAnnouncement: 'chat/addChatAnnouncement',
+      clearMessages: 'chat/clearMessages',
     }),
 
     async loadSelfStream() {
@@ -164,6 +180,8 @@ export default {
       presenceInterval = setInterval(sendPresence, 3000);
 
       sendReady();
+
+      this.addChatAnnouncement('Waiting for partner...');
     },
 
     onPeerCall(mediaConnection) {
@@ -171,14 +189,24 @@ export default {
         this.partnerStream = stream;
       });
 
+      mediaConnection.on('close', () => {
+        peer.destroy();
+      });
+
       mediaConnection.answer();
     },
 
     onPeerConnection(dataConnection) {
       dataConnection.on('open', () => {
-        this.isDataReady = true;
-
         this.dataConnection = dataConnection;
+
+        this.clearMessages();
+
+        this.addChatAnnouncement('You are now connected! Say hello!');
+      });
+
+      dataConnection.on('close', () => {
+        peer.destroy();
       });
     },
 
@@ -190,6 +218,14 @@ export default {
 
     onPeerMatch(partnerId) {
       this.setPartnerId(partnerId);
+    },
+
+    onPeerDisconnected() {
+      sendPeerDisconnect();
+
+      this.addChatAnnouncement('Your partner was disconnected');
+
+      this.dataConnection = null;
     },
 
     onSendMessage(message) {

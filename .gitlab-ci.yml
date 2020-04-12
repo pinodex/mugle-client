@@ -1,5 +1,7 @@
 stages:
   - test
+  - build
+  - deploy
 
 image: node:12.16-alpine3.11
 
@@ -17,3 +19,27 @@ eslint:
   only:
     - master
     - merge_requests
+
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  only:
+    - master
+
+deploy-dev:
+  stage: deploy
+  cache: {}
+  before_script:
+    - npm install -g now
+  script:
+    - /bin/sh deploy-now.sh dev
+  environment:
+    name: dev
+    url: https://$DEV_DOMAIN
+  only:
+    - master

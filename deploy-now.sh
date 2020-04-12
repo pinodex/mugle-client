@@ -22,6 +22,7 @@ esac
 
 echo "Starting deployment"
 
+cp now.json $DEPLOY_DIR
 mkdir -p $DEPLOY_DIR/.now
 
 cat > $DEPLOY_DIR/.now/project.json <<- EOM
@@ -37,6 +38,7 @@ exec 9>&1
 # Prepare deploy command args
 set -- \
     -t $ZEIT_TOKEN \
+    -A $DEPLOY_DIR/now.json \
     -Q $DEPLOY_DIR/.now \
     -S $ZEIT_SCOPE \
     -c
